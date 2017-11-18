@@ -1,0 +1,132 @@
+-------------------
+Problem Description
+-------------------
+
+The task is to implement a distribution system that handles user requests to
+store and retrieve data.
+
+The distribution system must write and read data from 'blocks' using the provided
+system calls declared in datablock.h. There are a finite number of blocks (NUM_DATA_BLOCKS)
+that can be used to store data. Each block has a finite number of writes (BLOCK_MAX_WRITES)
+that it can handle. Each time data is written to a block, a write is consumed and
+any previously written data in that block is overwritten with the new data. Once
+BLOCK_MAX_WRITES writes have been written to a block, that block can no longer be
+used. Blocks are addressed by an 'index' that ranges from 0 to NUM_DATA_BLOCKS-1.
+Data written to an index must be retrieveable when reading from the same index. 
+
+The distribution system must be implemented by you in the distribution.c file.
+You may implement additional functions only in distribution.c if needed. All other
+.c and .h files should NOT be modified.
+
+Commands from the user to read or write blocks come in the form of a single 64-bit value
+and must be parsed and handled in the process_command() function. Refer to the COMMAND BIT 
+REFERENCE for the meaning of the bits in the command. Note that in your implementation,
+the index requested by the comamnd does not necessarily have to be a 1:1 map to the same
+block index. However, your implementation must be able to retrieve the correct data
+from a requested user index regardless of which block index it is stored at.
+
+
+----------------
+Grading criteria
+----------------
+
+The success of the system is measured by the maximum number of writes that can
+be processed before blocks are used up AND the ability to preserve the most recently
+written data for each index. The more writes your system can procees, the higher your
+grade. The program must compile using GCC 4.x or later (see below for installation 
+options) and run without crashing.
+
+
+----------
+Your Tasks
+----------
+
+* Implement the initialize(), reset(), and process_command() functions according
+  to the COMMAND CALL REFERENCE. Implement any other internal functions or
+  types as required in order to meet the requirements. Descriptions of the
+  required parameters and return values are included as part of the comments
+  above the function declarations in distribution.c
+* Implement your tests in the given main() function after calling initialize()
+  and return any tests you write as part of your submission. Be sure to test your
+  algorithm thoroughly. We will be running your algorithm against a test suite
+  as well.
+* Include comments as necessary to understand your code.
+
+
+------
+Bounds
+------
+
+* Write commands must result in data stored into a block using the function
+  write_data_block().
+* Data cannot be stored in memory other than using the write_data_block()
+  function. For example, don't malloc memory to store data so the system can
+  handle more writes.
+* Do not modify anything in the datablock.h/c, or distribution.h files
+* You may add additional types or internal functions as needed in order to
+  optimize your implementation in distribution.c
+* You may add additional tests to main.c in order to check your implementation.
+  3 example tests are given.
+* We want to see what you can code, not the open-source community. Do not use
+  Boost or other external libraries to implement algorithms or pre-built data
+  structures. Using the standard C99 library and types are OK.
+
+  
+----------
+References
+----------
+
+SYSTEM CALL REFERENCE (datablock.h):
+write_data_block()  - Writes data to a specific block index.
+read_data_block()   - Reads data from a specific block index.
+get_write_counter() - retrieves the write count for a specific block.
+
+reset_data_blocks() - Resets all block write counts and data; Used only for
+                      testing. Do not use to increase the number of writes that
+                      can be achieved.
+dump_blocks()       - Prints the write count and and data for all blocks. Used
+                      for testing and debugging.
+
+                      
+COMMAND CALL REFERENCE (distribution.h):
+initialize()      - One time initialization called at the beginning of main.
+reset()           - Resets the distribution system between tests, can be called
+                    multiple times. Uses reset_data_blocks() to reset the blocks.
+process_command() - Proccesses all read and write requests from the user.
+
+
+COMMAND BIT REFERENCE:
+Bits
+ 0-2    Command type. CMD_WRITE is a write, CMD_READ is a read.
+ 3-9    User index to read or write. This index ranges from 0 to NUM_DATA_BLOCKS - 1.
+10-41   32-bit user data. For write commands this data must written to a block. For
+        read commands these bits must be filled with the data read from the block.
+42-63   Not used.
+
+
+---------------
+Command Example
+---------------
+
+Write data 0xA to index 0 => command = 0x2802
+Write data 0xB to index 0 => command = 0x2C02
+Write data 0xC to index 1 => command = 0x300A
+...
+Read index 0 => command = 0x1, should return data 0xB, command = 0x2C01
+Read index 1 => command = 0x9, should return data 0xC, command = 0x3009
+
+
+------------------
+Compiling with GCC
+------------------
+
+You must use GCC version 4.x or higher. The command line to compile your program
+is below:
+
+gcc -o distribution distribution.c datablock.c main.c
+
+* For Linux/Unix typically no install is required on these systems. Ensure that
+  the GCC version on your system is 4.x or higher
+* For Windows the TDM GCC package is recommended and easy to install.
+  Instructions and download links are here: http://tdm-gcc.tdragon.net/download.
+  You are free to use Cygwin or other package that supports GCC.
