@@ -222,6 +222,75 @@ bool write_then_fill(void)
     return true;
 }
 
+bool invalid_command(void)
+{
+    status_e status;
+    uint64_t command;
+
+    command = 0x06;
+    if((status = process_command(&command)) != DATA_INVALID) 
+    {
+        printf("ERROR: invalid_command: 6 is not a command type and failed with %d\n", (int)status);
+        return false;
+    }
+    else 
+    {
+        printf("Test Passed\n");
+    }
+
+    return true;
+
+}
+
+bool ignore_unused_bits(void) 
+{
+    status_e status;
+    uint64_t command;
+    uint64_t expected;
+
+    command = 0x2345adfbcccf502a;
+    if(status = process_command(&command) != SUCCESS)
+    {
+        printf("ERROR: ignore_unused_bits: write failed with %d\n", (int)status);
+        return false;
+    }
+    command = 0x2345adfbcccf5029;
+    if(status = process_command(&command) != SUCCESS)
+    {
+        printf("ERROR: ignore_unused_bits: read failed with %d\n", (int)status);
+        return false;
+    }
+    expected = 0x2345adfbcccf5029;
+    if(command != expected) 
+    {
+        printf("ERROR: ignore_unused_bits: Retrieved data does not match expected data\n");
+        printf("ERROR: ignore_unused_bits: Actual: %lx, Expected: %lx\n", command, expected);
+        return false;
+    }
+    else 
+    {
+        printf("Test Passed\n");
+    }
+    return true;
+}
+
+bool invalid_index(void)
+{
+    uint64_t command;
+    status_e status;
+
+    command = 0x286cb0ffffa;
+    if((status = process_command(&command)) != DATA_INVALID)
+    {
+        printf("ERROR: invalid_index: write has performed with invalid index and failed with %d\n", (int)status);
+        return false;
+    }
+    else {
+        printf("Test Passed \n");
+    }
+    return true;
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -238,6 +307,18 @@ int main(int argc, char *argv[])
     printf("Testing write before fill\n");
     RUN_TEST(write_then_fill(), "write_then_fill");
     reset();    //reset the system so we can run another test
+
+    printf("Testing invalid command\n");
+    RUN_TEST(invalid_command(), "invalid_command");
+    reset();
+
+    printf("Testing ignore unused bits\n");
+    RUN_TEST(ignore_unused_bits(), "ignore_unused_bits");
+    reset();
+
+    printf("Testing invalid index\n");
+    RUN_TEST(invalid_index(), "invalid_index");
+    reset();
 
     return 0;
 }
